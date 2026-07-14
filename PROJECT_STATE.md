@@ -1,6 +1,6 @@
 # OSTIS — Project State (read this first in any new chat)
 
-Last updated: Module 3 complete, starting Module 4.
+Last updated: Module 4 complete, starting Module 5.
 
 ## Why this file exists
 This project was rebuilt from scratch after two prior versions (V2, V3) were
@@ -19,7 +19,11 @@ instantly by reading this file instead of relying on chat memory.
       get proportionally higher loss weight). Run finetune_binary.py /
       classify_bootstrap.py / finetune_industry.py on your own machine
       with real crawled data before using classify_finetuned.py.
-- [ ] Module 4 — Embeddings + ChromaDB
+- [x] Module 4 — Embeddings + ChromaDB
+      Note: ChromaDB plumbing (create, add, filtered query) was verified
+      in-sandbox with synthetic embeddings. The real all-MiniLM-L6-v2 model
+      download requires huggingface.co, not reachable in this sandbox --
+      run on your machine with normal internet access.
 - [ ] Module 5 — Hybrid NER
 - [ ] Module 6 — Knowledge Graph (Neo4j)
 - [ ] Module 7 — Incremental Pipeline Runner
