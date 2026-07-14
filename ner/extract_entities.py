@@ -1,0 +1,113 @@
+# ─────────────────────────────────────────────────────────────────
+# OSTIS — Module 5a: Baseline Hybrid NER (regex + keyword lists)
+#
+# This is the always-available extraction layer — no model download
+# required. It handles:
+#   CVE IDs      → regex (fixed MITRE format, 100% reliable)
+#   IP addresses → regex (public IPs only; private ranges filtered)
+#   Malware      → keyword list match
+#   Threat actor → keyword list match
+#
+# ner_combiner.py (Module 5b) layers a fine-tuned model on top of this
+# to catch entities NOT in the keyword lists — but this script alone is
+# enough to run the full pipeline end-to-end.
+#
+# Input  : classifier/tagged_articles.csv
+# Output : ner/ner_output.csv
+# ─────────────────────────────────────────────────────────────────
+
+import os
+import re
+import pandas as pd
+
+from entity_lists import MALWARE_LIST, THREAT_ACTOR_LIST
+
+BASE_DIR   = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+INPUT_CSV  = os.path.join(BASE_DIR, "classifier", "tagged_articles.csv")
+OUTPUT_CSV = os.path.join(BASE_DIR, "ner", "ner_output.csv")
+
+CVE_PATTERN = re.compile(r'CVE-\d{4}-\d{4,7}', re.IGNORECASE)
+IP_PATTERN = re.compile(
+    r'\b(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}'
+    r'(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\b'
+)
+PRIVATE_PREFIXES = (
+    "127.", "192.168.", "10.", "0.", "255.",
+    "172.16.", "172.17.", "172.18.", "172.19.",
+    "172.20.", "172.21.", "172.22.", "172.23.",
+    "172.24.", "172.25.", "172.26.", "172.27.",
+    "172.28.", "172.29.", "172.30.", "172.31.",
+)
+
+
+def is_private_ip(ip: str) -> bool:
+    return ip.startswith(PRIVATE_PREFIXES)
+
+
+def extract_entities(text: str):
+    if not isinstance(text, str) or not text.strip():
+        return [], [], [], []
+
+    text_lower = text.lower()
+
+    cves = sorted(set(c.upper() for c in CVE_PATTERN.findall(text)))
+    ips = sorted(set(ip for ip in IP_PATTERN.findall(text) if not is_private_ip(ip)))
+
+    malware = sorted(set(kw for kw in MALWARE_LIST if kw in text_lower))
+    actors = sorted(set(kw for kw in THREAT_ACTOR_LIST if kw in text_lower))
+
+    return cves, ips, malware, actors
+
+
+def run():
+    print("=" * 60)
+    print("OSTIS — Module 5a: Baseline Hybrid NER (regex + keywords)")
+    print("=" * 60)
+
+    if not os.path.exists(INPUT_CSV):
+        print(f"ERROR: {INPUT_CSV} not found. Run classification first (Module 3).")
+        return
+
+    df = pd.read_csv(INPUT_CSV).dropna(subset=["clean_text"])
+    print(f"Articles loaded: {len(df)}\n")
+
+    results = []
+    totals = {"cve": 0, "ip": 0, "malware": 0, "actor": 0}
+
+    for _, row in df.iterrows():
+        cves, ips, malware, actors = extract_entities(row["clean_text"])
+        totals["cve"] += len(cves)
+        totals["ip"] += len(ips)
+        totals["malware"] += len(malware)
+        totals["actor"] += len(actors)
+
+        results.append({
+            "title":            row.get("title", ""),
+            "url":              row.get("url", ""),
+            "primary_industry": row.get("primary_industry", ""),
+            "threat_score":     row.get("threat_score", ""),
+            "cve_ids":          ", ".join(cves) if cves else "",
+            "ip_addresses":     ", ".join(ips) if ips else "",
+            "malware_names":    ", ".join(malware) if malware else "",
+            "threat_actors":    ", ".join(actors) if actors else "",
+            "clean_text":       row.get("clean_text", ""),
+        })
+
+    output_df = pd.DataFrame(results)
+    output_df.to_csv(OUTPUT_CSV, index=False)
+
+    with_entities = output_df[
+        (output_df["cve_ids"] != "") | (output_df["ip_addresses"] != "") |
+        (output_df["malware_names"] != "") | (output_df["threat_actors"] != "")
+    ].shape[0]
+
+    print(f"CVE IDs found       : {totals['cve']}")
+    print(f"IP addresses found  : {totals['ip']}")
+    print(f"Malware names found : {totals['malware']}")
+    print(f"Threat actors found : {totals['actor']}")
+    print(f"Articles w/ entities: {with_entities}/{len(df)}")
+    print(f"Output saved to     : {OUTPUT_CSV}")
+
+
+if __name__ == "__main__":
+    run()

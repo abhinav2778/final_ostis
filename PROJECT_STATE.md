@@ -1,6 +1,6 @@
 # OSTIS — Project State (read this first in any new chat)
 
-Last updated: Module 4 complete, starting Module 5.
+Last updated: Module 5 complete, starting Module 6.
 
 ## Why this file exists
 This project was rebuilt from scratch after two prior versions (V2, V3) were
@@ -24,7 +24,13 @@ instantly by reading this file instead of relying on chat memory.
       in-sandbox with synthetic embeddings. The real all-MiniLM-L6-v2 model
       download requires huggingface.co, not reachable in this sandbox --
       run on your machine with normal internet access.
-- [ ] Module 5 — Hybrid NER
+- [x] Module 5 — Hybrid NER
+      3 layers: regex (CVE/IP, always works) + keyword lists (known
+      malware/actors) + optional fine-tuned RoBERTa (distant supervision,
+      catches unseen entities). Combiner gracefully degrades to
+      keyword-only if the fine-tuned model isn't present -- verified this
+      works correctly in-sandbox. Vendor blocklist prevents Microsoft/
+      Cisco/AWS/etc. being flagged as threats.
 - [ ] Module 6 — Knowledge Graph (Neo4j)
 - [ ] Module 7 — Incremental Pipeline Runner
 - [ ] Module 8 — FastAPI backend

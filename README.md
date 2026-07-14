@@ -12,7 +12,7 @@ a bad edit can never wipe out a working state again.
 - [x] Module 2 — Preprocessing
 - [ ] Module 3 — Classification (CySecBERT fine-tuning)
 - [x] Module 4 — Embeddings + ChromaDB
-- [ ] Module 5 — Hybrid NER
+- [x] Module 5 — Hybrid NER
 - [ ] Module 6 — Knowledge Graph (Neo4j)
 - [ ] Module 7 — Incremental Pipeline Runner
 - [ ] Module 8 — FastAPI backend
