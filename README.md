@@ -9,7 +9,7 @@ a bad edit can never wipe out a working state again.
 ## Build status
 
 - [ ] Module 1 — Crawler (Scrapy)
-- [ ] Module 2 — Preprocessing
+- [x] Module 2 — Preprocessing
 - [ ] Module 3 — Classification (CySecBERT fine-tuning)
 - [ ] Module 4 — Embeddings + ChromaDB
 - [ ] Module 5 — Hybrid NER

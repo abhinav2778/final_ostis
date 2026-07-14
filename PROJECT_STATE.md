@@ -11,7 +11,7 @@ instantly by reading this file instead of relying on chat memory.
 ## Build order & status
 - [x] Repo skeleton, .gitignore, requirements.txt, .env.example, README
 - [x] Module 1 — Crawler (Scrapy)
-- [ ] Module 2 — Preprocessing
+- [x] Module 2 — Preprocessing
 - [ ] Module 3 — Classification (CySecBERT fine-tuning: binary + industry)
 - [ ] Module 4 — Embeddings + ChromaDB
 - [ ] Module 5 — Hybrid NER
