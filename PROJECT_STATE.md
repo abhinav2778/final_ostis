@@ -1,6 +1,6 @@
 # OSTIS — Project State (read this first in any new chat)
 
-Last updated: Module 1 complete, starting Module 2.
+Last updated: Module 3 complete, starting Module 4.
 
 ## Why this file exists
 This project was rebuilt from scratch after two prior versions (V2, V3) were
@@ -12,7 +12,13 @@ instantly by reading this file instead of relying on chat memory.
 - [x] Repo skeleton, .gitignore, requirements.txt, .env.example, README
 - [x] Module 1 — Crawler (Scrapy)
 - [x] Module 2 — Preprocessing
-- [ ] Module 3 — Classification (CySecBERT fine-tuning: binary + industry)
+- [x] Module 3 — Classification (CySecBERT fine-tuning: binary + industry)
+      Note: full live fine-tuning was NOT run in the build sandbox —
+      huggingface.co is not reachable there. Custom class-weighting logic
+      was smoke-tested standalone and confirmed correct (minority classes
+      get proportionally higher loss weight). Run finetune_binary.py /
+      classify_bootstrap.py / finetune_industry.py on your own machine
+      with real crawled data before using classify_finetuned.py.
 - [ ] Module 4 — Embeddings + ChromaDB
 - [ ] Module 5 — Hybrid NER
 - [ ] Module 6 — Knowledge Graph (Neo4j)
