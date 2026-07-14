@@ -17,6 +17,8 @@ a bad edit can never wipe out a working state again.
 - [ ] Module 7 — Incremental Pipeline Runner
 - [ ] Module 8 — FastAPI backend
 - [ ] Module 9 — Streamlit dashboard
+- [ ] Module 10 — Notification engine (email/webhook/SIEM export)
+- [ ] Module 11 — Mobile app (React Native)
 
 ## Setup
 
