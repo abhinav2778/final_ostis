@@ -98,6 +98,7 @@ def run(epochs: int = 3, batch_size: int = 8, max_length: int = 256):
         weight_decay=0.01,
         eval_strategy="epoch",
         save_strategy="epoch",
+        save_total_limit=2,
         load_best_model_at_end=True,
         metric_for_best_model="f1",
         logging_steps=20,
