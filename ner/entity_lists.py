@@ -60,3 +60,19 @@ VENDOR_BLOCKLIST = {
 # Sort by phrase length descending so longer matches win first.
 MALWARE_LIST.sort(key=len, reverse=True)
 THREAT_ACTOR_LIST.sort(key=len, reverse=True)
+
+# Some malware/ransomware group names are also common English words
+# ("play", "royal", "hive", "maze", "cuba", "medusa", "snatch"). Matching
+# these on the word alone produces heavy false positives ("plug-and-play",
+# "cisco booth play", "continues to play a role"). For these specific
+# entries, require a nearby context word in the same sentence before
+# counting it as a real match.
+AMBIGUOUS_TERM_CONTEXT = {
+    "play": ["ransomware", "ransom", "gang", "extortion", "leak site"],
+    "royal": ["ransomware", "ransom", "gang", "extortion", "leak site"],
+    "hive": ["ransomware", "ransom", "gang", "extortion", "leak site"],
+    "maze": ["ransomware", "ransom", "gang", "extortion", "leak site"],
+    "cuba": ["ransomware", "ransom", "gang", "extortion", "leak site"],
+    "medusa": ["ransomware", "ransom", "gang", "extortion", "leak site"],
+    "snatch": ["ransomware", "ransom", "gang", "extortion", "leak site"],
+}
