@@ -45,40 +45,9 @@ def is_private_ip(ip: str) -> bool:
 
 
 def _compile_boundary_patterns(keyword_list):
+    """Compile word-boundary regex for each keyword so 'conti' doesn't match
+    inside 'continuously', 'play' doesn't match inside 'display', etc."""
     return {kw: re.compile(r'\b' + re.escape(kw) + r'\b', re.IGNORECASE) for kw in keyword_list}
-
-
-_MALWARE_PATTERNS = _compile_boundary_patterns(MALWARE_LIST)
-_ACTOR_PATTERNS = _compile_boundary_patterns(THREAT_ACTOR_LIST)
-_AMBIGUOUS_CONTEXT_PATTERNS = {
-    term: [re.compile(r'\b' + re.escape(ctx) + r'\b', re.IGNORECASE) for ctx in contexts]
-    for term, contexts in AMBIGUOUS_TERM_CONTEXT.items()
-}
-
-_AMBIGUOUS_WINDOW = 10
-
-
-def _passes_ambiguous_check(keyword: str, text: str) -> bool:
-    if keyword not in AMBIGUOUS_TERM_CONTEXT:
-        return True
-    tokens = text.lower().split()
-    positions = [i for i, t in enumerate(tokens) if t == keyword]
-    context_patterns = _AMBIGUOUS_CONTEXT_PATTERNS[keyword]
-    for pos in positions:
-        start, end = max(0, pos - _AMBIGUOUS_WINDOW), pos + _AMBIGUOUS_WINDOW + 1
-        nearby_text = " ".join(tokens[start:end])
-        if any(ctx.search(nearby_text) for ctx in context_patterns):
-            return True
-    return False
-
-
-def keyword_extract(text: str):
-    malware = set(
-        kw for kw, pattern in _MALWARE_PATTERNS.items()
-        if pattern.search(text) and _passes_ambiguous_check(kw, text)
-    )
-    actors = set(kw for kw, pattern in _ACTOR_PATTERNS.items() if pattern.search(text))
-    return malware, actors
 
 
 _MALWARE_PATTERNS = _compile_boundary_patterns(MALWARE_LIST)
@@ -126,61 +95,6 @@ def extract_entities(text: str):
         kw for kw, pattern in _MALWARE_PATTERNS.items()
         if pattern.search(text) and _passes_ambiguous_check(kw, text)
     )
-    actors = sorted(kw for kw, pattern in _ACTOR_PATTERNS.items() if pattern.search(text))
-
-    return cves, ips, malware, actors
-
-
-_MALWARE_PATTERNS = _compile_boundary_patterns(MALWARE_LIST)
-_ACTOR_PATTERNS = _compile_boundary_patterns(THREAT_ACTOR_LIST)
-_AMBIGUOUS_CONTEXT_PATTERNS = {
-    term: [re.compile(r'\b' + re.escape(ctx) + r'\b', re.IGNORECASE) for ctx in contexts]
-    for term, contexts in AMBIGUOUS_TERM_CONTEXT.items()
-}
-
-
-def _passes_ambiguous_check(keyword: str, text: str) -> bool:
-    """For ambiguous keywords (also common English words), only accept a
-    match if a context word appears in the same sentence as the keyword."""
-    if keyword not in _AMBIGUOUS_CONTEXT_PATTERNS:
-        return True
-    context_patterns = _AMBIGUOUS_CONTEXT_PATTERNS[keyword]
-    keyword_pattern = _MALWARE_PATTERNS[keyword]
-    for sentence in re.split(r'[.\n]', text):
-        if keyword_pattern.search(sentence):
-            if any(ctx.search(sentence) for ctx in context_patterns):
-                return True
-    return False
-
-
-def extract_entities(text: str):
-    if not isinstance(text, str) or not text.strip():
-        return [], [], [], []
-
-    cves = sorted(set(c.upper() for c in CVE_PATTERN.findall(text)))
-    ips = sorted(set(ip for ip in IP_PATTERN.findall(text) if not is_private_ip(ip)))
-
-    malware = sorted(
-        kw for kw, pattern in _MALWARE_PATTERNS.items()
-        if pattern.search(text) and _passes_ambiguous_check(kw, text)
-    )
-    actors = sorted(kw for kw, pattern in _ACTOR_PATTERNS.items() if pattern.search(text))
-
-    return cves, ips, malware, actors
-
-
-_MALWARE_PATTERNS = _compile_boundary_patterns(MALWARE_LIST)
-_ACTOR_PATTERNS = _compile_boundary_patterns(THREAT_ACTOR_LIST)
-
-
-def extract_entities(text: str):
-    if not isinstance(text, str) or not text.strip():
-        return [], [], [], []
-
-    cves = sorted(set(c.upper() for c in CVE_PATTERN.findall(text)))
-    ips = sorted(set(ip for ip in IP_PATTERN.findall(text) if not is_private_ip(ip)))
-
-    malware = sorted(kw for kw, pattern in _MALWARE_PATTERNS.items() if pattern.search(text))
     actors = sorted(kw for kw, pattern in _ACTOR_PATTERNS.items() if pattern.search(text))
 
     return cves, ips, malware, actors

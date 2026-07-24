@@ -15,7 +15,7 @@ import os
 import re
 import pandas as pd
 
-from entity_lists import MALWARE_LIST, THREAT_ACTOR_LIST, VENDOR_BLOCKLIST
+from entity_lists import MALWARE_LIST, THREAT_ACTOR_LIST, VENDOR_BLOCKLIST, AMBIGUOUS_TERM_CONTEXT
 
 BASE_DIR   = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_DIR  = os.path.join(BASE_DIR, "ner", "finetuned_ner")
@@ -40,10 +40,42 @@ def is_private_ip(ip: str) -> bool:
     return ip.startswith(PRIVATE_PREFIXES)
 
 
+def _compile_boundary_patterns(keyword_list):
+    return {kw: re.compile(r'\b' + re.escape(kw) + r'\b', re.IGNORECASE) for kw in keyword_list}
+
+
+_MALWARE_PATTERNS = _compile_boundary_patterns(MALWARE_LIST)
+_ACTOR_PATTERNS = _compile_boundary_patterns(THREAT_ACTOR_LIST)
+_AMBIGUOUS_CONTEXT_PATTERNS = {
+    term: [re.compile(r'\b' + re.escape(ctx) + r'\b', re.IGNORECASE) for ctx in contexts]
+    for term, contexts in AMBIGUOUS_TERM_CONTEXT.items()
+}
+
+# clean_text has no sentence-boundary punctuation (preprocess.py strips it),
+# so a word-proximity window is used instead of "same sentence".
+_AMBIGUOUS_WINDOW = 10
+
+
+def _passes_ambiguous_check(keyword: str, text: str) -> bool:
+    if keyword not in AMBIGUOUS_TERM_CONTEXT:
+        return True
+    tokens = text.lower().split()
+    positions = [i for i, t in enumerate(tokens) if t == keyword]
+    context_patterns = _AMBIGUOUS_CONTEXT_PATTERNS[keyword]
+    for pos in positions:
+        start, end = max(0, pos - _AMBIGUOUS_WINDOW), pos + _AMBIGUOUS_WINDOW + 1
+        nearby_text = " ".join(tokens[start:end])
+        if any(ctx.search(nearby_text) for ctx in context_patterns):
+            return True
+    return False
+
+
 def keyword_extract(text: str):
-    text_lower = text.lower()
-    malware = set(kw for kw in MALWARE_LIST if kw in text_lower)
-    actors = set(kw for kw in THREAT_ACTOR_LIST if kw in text_lower)
+    malware = set(
+        kw for kw, pattern in _MALWARE_PATTERNS.items()
+        if pattern.search(text) and _passes_ambiguous_check(kw, text)
+    )
+    actors = set(kw for kw, pattern in _ACTOR_PATTERNS.items() if pattern.search(text))
     return malware, actors
 
 
