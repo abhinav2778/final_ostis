@@ -44,17 +44,25 @@ def is_private_ip(ip: str) -> bool:
     return ip.startswith(PRIVATE_PREFIXES)
 
 
+def _compile_boundary_patterns(keyword_list):
+    """Compile word-boundary regex for each keyword so 'conti' doesn't match
+    inside 'continuously', 'play' doesn't match inside 'display', etc."""
+    return {kw: re.compile(r'\b' + re.escape(kw) + r'\b', re.IGNORECASE) for kw in keyword_list}
+
+
+_MALWARE_PATTERNS = _compile_boundary_patterns(MALWARE_LIST)
+_ACTOR_PATTERNS = _compile_boundary_patterns(THREAT_ACTOR_LIST)
+
+
 def extract_entities(text: str):
     if not isinstance(text, str) or not text.strip():
         return [], [], [], []
 
-    text_lower = text.lower()
-
     cves = sorted(set(c.upper() for c in CVE_PATTERN.findall(text)))
     ips = sorted(set(ip for ip in IP_PATTERN.findall(text) if not is_private_ip(ip)))
 
-    malware = sorted(set(kw for kw in MALWARE_LIST if kw in text_lower))
-    actors = sorted(set(kw for kw in THREAT_ACTOR_LIST if kw in text_lower))
+    malware = sorted(kw for kw, pattern in _MALWARE_PATTERNS.items() if pattern.search(text))
+    actors = sorted(kw for kw, pattern in _ACTOR_PATTERNS.items() if pattern.search(text))
 
     return cves, ips, malware, actors
 
