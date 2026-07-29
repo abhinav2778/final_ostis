@@ -33,7 +33,7 @@ instantly by reading this file instead of relying on chat memory.
       Cisco/AWS/etc. being flagged as threats.
 - [ ] Module 6 — Knowledge Graph (Neo4j)
 - [ ] Module 7 — Incremental Pipeline Runner
-- [ ] Module 8 — FastAPI backend
+- [x] Module 8 — FastAPI backend (validated: all 7 endpoints working)
 - [ ] Module 9 — Streamlit dashboard
 - [ ] Module 10 — Notification engine (email/webhook/SIEM export) — from
       interview feedback, not yet built in any prior version

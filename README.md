@@ -15,7 +15,7 @@ a bad edit can never wipe out a working state again.
 - [x] Module 5 — Hybrid NER
 - [ ] Module 6 — Knowledge Graph (Neo4j)
 - [ ] Module 7 — Incremental Pipeline Runner
-- [ ] Module 8 — FastAPI backend
+- [x] Module 8 — FastAPI backend
 - [ ] Module 9 — Streamlit dashboard
 - [ ] Module 10 — Notification engine (email/webhook/SIEM export)
 - [ ] Module 11 — Mobile app (React Native)
