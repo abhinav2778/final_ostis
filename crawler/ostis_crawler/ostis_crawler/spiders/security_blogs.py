@@ -257,8 +257,9 @@ class SecurityBlogsSpider(scrapy.Spider):
             return
 
         title = (
-            response.css("h1::text").get() or
+            response.css('meta[property="og:title"]::attr(content)').get() or
             response.css("title::text").get() or
+            response.css("h1::text").get() or
             ""
         ).strip()
         if not title or len(title) < 5:
